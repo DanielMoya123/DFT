@@ -10,7 +10,9 @@
 #include <ltiTimer.h>
 #include <ltiGaussKernels.h>
 #include <ltiBinaryKernels.h>
-
+#include <ltiBoundaryExpansion.h>
+#include "ltiFFT.h"
+ #include "ltiIFFT.h"
 
 /******************************************************
  * 
@@ -71,8 +73,31 @@ int main(int argc, char *argv[])
 
 
 
+	//In frequency domain
 
-	
+	// NEED TO APPLY BOUNDARY EXPANSION
+
+	lti::fft fft2d;     // for 2-dimensional FFT
+  	lti::ifft ifft2d;   // for 2-dimensional inverse FFT
+
+
+  	/* NOT SURE WHY */
+  	par2d.mode = lti::fft::Polar;
+	ifft2d.setParameters(par2d);
+	fft2d.setParameters(par2d);
+/**************************/
+
+	lti::channel back;
+  	lti::channel re,im;
+
+	fft2d.apply(R, re, im);       // the actual FFT, Parameters: source, real result part, imaginary result part
+  	ifft2d.apply(re, im, back);   // inverse FF, Parameters: real part, imaginary part, destination
+
+
+  	// Multiply 2 channels
+  	lti::channel  result;
+
+  	result = lti::matrix< T >::emultiply(a,b )//not sure if so for channel instead of matrix
 
 
       

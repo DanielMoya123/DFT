@@ -22,14 +22,10 @@
  * 
  * **********************************************/
 void help()  {
-	cout << "usage: \n" << endl;   
-  
-	cout << "usage: Campbell-Robson [option] [N] [option] [N] ... \n" << endl;  
-	cout << "       -r|--rows <M>     the number of rows" 			<< endl;
-	cout << "       -c|--columns <N>  the number of columns" 			<< endl;  
-	cout << "       -l|--lineal       if the use what linear scale" 	<< endl;  
-	cout << "       -x|--rowShow <N>  the number of row to show" 		<< endl;  
-	cout << "       -h|--help        show this help\n"	<< endl; 
+	
+	cout << "usage: main [option] [N] [option] [N] ... \n" << endl;  
+	cout << "       -pi|--pathimage <Path>   the path of the image" << endl;
+	cout << "       -pf|--pathfilter <Path>  the path of the filter" << endl;  
   
 }
 
@@ -53,7 +49,6 @@ int main(int argc, char *argv[])
 	// Tomar n muestras de cada funcion
 
 	// Example of how to use boost program options
-
 	if (argc > 1) {
 		
 		// If the user is asked about info
@@ -64,8 +59,11 @@ int main(int argc, char *argv[])
 
 		po::options_description desc("Usage");
 		desc.add_options()
-		("robots", po::value<int>()->default_value(3), 
-		"How many robots do you want to send on a murderous rampage?");
+		("pathimage", po::value<string>()->default_value("./Lenna.png"), 
+		"Where is the path of the image?");
+		desc.add_options()
+		("pathfilter", po::value<string>()->default_value("./filter.png"), 
+		"Where is the path of the filter?");
 
 		po::variables_map opts;
 		po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -74,32 +72,33 @@ int main(int argc, char *argv[])
 			po::notify(opts);
 		} catch (std::exception& e) {
 			std::cerr << "Error: " << e.what() << "\n";
-			return 1;
+			return EXIT_FAILURE;
 		}
 
-		int nRobots = opts["robots"].as<int>(); 
-		// automatically assigns default when option not supplied by user!!
-
-		std::cout << nRobots << " robots have begun the silicon revolution" << std::endl;
+		string pathImg = opts["pathimage"].as<string>();
+		string pathFilter = opts["pathfilter"].as<string>();
 
 		// End example
-
 		lti::timer chron;
 
 		chron.start();
 
-		lti::loadImage loader; // functor to load images
-		lti::image img;        // the image loaded will be left here.
+		lti::loadImage loader; 
+		lti::image img;
 
-		loader.load("Lenna.png",img);  // load PNG image
+		// Load PNG image
+		loader.load("Lenna.png",img); 
 
 		lti::channel  imgGray;
-		imgGray.castFrom(img);    
+		imgGray.castFrom(img);  
+		
+		// *************************************  
+		// We create the filter
+		// *************************************  
 
-		double variance;
 
-		// kSize NEEDS TO BE DEFINED AS AN ENTRY PARAMETER
-		variance = pow((kSize+2)/6, 2)
+		// We get the size in x or y of the filter and set the kSize
+		double variance = pow((kSize+2)/6, 2);
 
 		//Guassian kernel
 		lti::gaussKernel2D<lti::channel::value_type> gKernel(kSize,variance); 
@@ -116,11 +115,6 @@ int main(int argc, char *argv[])
 		oParam.setKernel(oKernel);                        // use the ortogonal kernel
 		oFilter.setParameters(oParam);                    // set parameters
 		oFilter.apply(imgGray);
-
-
-
-
-
 
 		//In frequency domain
 

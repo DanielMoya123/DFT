@@ -8,12 +8,11 @@
 #include <math.h>
 
 #include <ltiGaussKernels.h>
-#include <ltiBinaryKernels.h>
+
 #include <ltiBoundaryExpansion.h>
 #include "ltiFFT.h"
 #include "ltiIFFT.h"
 
-using namespace cv;
 using namespace std;
 using namespace lti;
 

@@ -3,9 +3,19 @@
  * Libraries
  * 
  * ****************************/
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <cctype>
+#include <iostream>
+#include <cstdlib>
+#include <stdexcept>
+#include <math.h>
+
 #include <boost/program_options.hpp>
 
 #include <ltiTimer.h>
+
 
 
 /*****************************
@@ -13,6 +23,7 @@
  * NameSpaces
  * 
  * ****************************/
+using namespace std;
  namespace po = boost::program_options;
  
 
@@ -80,9 +91,9 @@ int main(int argc, char *argv[])
 
 		// End example
 		lti::timer chron;
-
 		chron.start();
 
+		/* A GRAY IMAGE IS GOING TO BE GENERATED
 		lti::loadImage loader; 
 		lti::image img;
 
@@ -90,7 +101,7 @@ int main(int argc, char *argv[])
 		loader.load("Lenna.png",img); 
 
 		lti::channel  imgGray;
-		imgGray.castFrom(img);  
+		imgGray.castFrom(img);  */
 		
 		// *************************************  
 		// We create the filter

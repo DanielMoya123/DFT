@@ -12,18 +12,19 @@
 #include <ltiBoundaryExpansion.h>
 #include "ltiFFT.h"
 #include "ltiIFFT.h"
+#include <ltiImage.h>
 
 using namespace std;
-using namespace lti;
 
 class FilterImage
 {
 	public:
 		FilterImage();
-		image GenerateSquareOddGaussianFilter(int size,string path);
-		void  ConvolutionSquareFilter2D(int size,image Gaussian,image imgToFilter);
-		void  ConvolutionSquareFilterOctogonal(int size,image Gaussian,image imgToFilter);
-		void  SpaceSquareFilter(int size,string pathGaussian,image Gaussian,image imgToFilter);
+		lti::image GenerateSquareOddGaussianFilter(int size,string path);
+		void  ConvolutionSquareFilter2D(int size,lti::image Gaussian,lti::image imgToFilter);
+		void  ConvolutionSquareFilterOctogonal(int size,lti::image Gaussian,lti::image imgToFilter);
+		void  SpaceSquareFilter(int size,string pathGaussian,lti::image Gaussian,lti::image imgToFilter);
+		lti::channel GenerateRandomImage(int sizeX, int sizeY);
 	private:
 		
 };

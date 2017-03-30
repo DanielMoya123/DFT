@@ -58,12 +58,12 @@ FilterImage::FilterImage(void) {
  * Restrinctions:
  * 			
  *****/
-image FilterImage::GenerateSquareOddGaussianFilter(int size,string path){ 
+lti::image FilterImage::GenerateSquareOddGaussianFilter(int size,string path){ 
 	
 }
 
-void  FilterImage::ConvolutionSquareFilter2D(int size,image Gaussian,image imgToFilter){}
+void  FilterImage::ConvolutionSquareFilter2D(int size,lti::image Gaussian,lti::image imgToFilter){}
 
-void  FilterImage::ConvolutionSquareFilterOctogonal(int size,image Gaussian,image imgToFilter){}
+void  FilterImage::ConvolutionSquareFilterOctogonal(int size,lti::image Gaussian,lti::image imgToFilter){}
 
-void  FilterImage::SpaceSquareFilter(int size,string pathGaussian,image Gaussian,image imgToFilter){}
+void  FilterImage::SpaceSquareFilter(int size,string pathGaussian,lti::image Gaussian,lti::image imgToFilter){}

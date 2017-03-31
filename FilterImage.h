@@ -8,11 +8,15 @@
 #include <math.h>
 
 #include <ltiGaussKernels.h>
-
+#include <ltiOctagonalKernel.h>
 #include <ltiBoundaryExpansion.h>
 #include "ltiFFT.h"
 #include "ltiIFFT.h"
 #include <ltiImage.h>
+#include <ltiChannel.h>
+#include <ltiConvolution.h>
+#include <ltiMatrix.h>
+#include <ltiKernel2D.h>
 
 using namespace std;
 
@@ -20,11 +24,9 @@ class FilterImage
 {
 	public:
 		FilterImage();
-		lti::image GenerateSquareOddGaussianFilter(int size,string path);
-		void  ConvolutionSquareFilter2D(int size,lti::image Gaussian,lti::image imgToFilter);
-		void  ConvolutionSquareFilterOctogonal(int size,lti::image Gaussian,lti::image imgToFilter);
-		void  SpaceSquareFilter(int size,string pathGaussian,lti::image Gaussian,lti::image imgToFilter);
-		lti::channel GenerateRandomImage(int sizeX, int sizeY);
+		lti::kernel2D<float> GenerateSquareOddGaussianFilter(int kSize,int variance,bool octagonal);
+		void  ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
+		void  SpaceSquareFilter(lti::kernel2D<float> kernel,lti::image imgToFilter);
 	private:
 		
 };

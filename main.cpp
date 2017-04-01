@@ -22,6 +22,19 @@
  * 
  * ****************************/
 using namespace std;
+
+
+/*****************************
+ * 
+ * Definitions
+ * 
+ * ****************************/
+#define KMAX 1023
+#define KMIN 3
+#define N_MIN 64
+#define N_MAX 1920
+#define M_MIN 48
+#define M_MAX 1080
  
 
 /******************************************************
@@ -56,6 +69,7 @@ int main(int argc, char *argv[])
 		double **dataMatrix;
 		dataMatrix = new double*[10];
 		for(int i = 0; i <10; i++)
+
 			dataMatrix[i] = new double[10];
 		
 		int u = 100, v = 100;
@@ -84,7 +98,7 @@ int main(int argc, char *argv[])
 		// We create the octogonal kernel 
 		lti::kernel2D<float> gKernel2D = filterController.GenerateSquareOddGaussianFilter(kSize,variance,true);
 		
-		int n = 2;
+		int n = 0;
 
 		for (int i = 0; i < 10; i++)
 		{

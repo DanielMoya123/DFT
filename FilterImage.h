@@ -17,6 +17,7 @@
 #include <ltiConvolution.h>
 #include <ltiMatrix.h>
 #include <ltiKernel2D.h>
+#include <ltiBoundaryExpansion.h>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ class FilterImage
 		lti::kernel2D<float> GenerateSquareOddGaussianFilter(int kSize,int variance,bool octagonal);
 		void  ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
 		void  SpaceSquareFilter(lti::kernel2D<float> kernel,lti::image imgToFilter);
+		lti::matrix<float> GetPadded(lti::matrix<float> m, int pSize);
 	private:
 		
 };

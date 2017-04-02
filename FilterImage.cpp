@@ -143,3 +143,27 @@ void  FilterImage::SpaceSquareFilter(lti::kernel2D<float> kernel,lti::image imgT
 		//ifft2d.apply(re, im, back);   // inverse FF, Parameters: real part, imaginary part, destination		
 	
 }
+
+
+/******************************************************
+ * 
+ * 
+ * 
+ * **********************************************
+ * 
+ * Inputs: 
+ * 			
+ * 
+ * Outputs:
+ * 		
+ * 
+ * Restrinctions:
+ * 			
+ *****/
+lti::matrix<float> FilterImage::GetPadded(lti::matrix<float> m, int pSize){
+
+	lti::matrix<float> result;
+	lti::boundaryExpansion b = lti::boundaryExpansion(pSize);
+	b.apply(m, result);
+	return result;
+}

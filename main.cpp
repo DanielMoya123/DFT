@@ -71,11 +71,20 @@ int main(int argc, char *argv[])
 		string pathImg = "./imageToProcess.png";
 		string pathFilter = "./Guassfilter.png";
 
-		double **dataMatrix;
-		dataMatrix = new double*[10];
+		double **dataMatrixD;
+		double **dataMatrixG;
+		double **dataMatrixF;
+		dataMatrixD = new double*[10];
+		dataMatrixG = new double*[10];
+		dataMatrixF = new double*[10];
 		for(int i = 0; i <10; i++)
+		{
+			dataMatrixD[i] = new double[10];
+			dataMatrixG[i] = new double[10];
+			dataMatrixF[i] = new double[10];
+		}
 
-			dataMatrix[i] = new double[10];
+			
 		
 		//int u = 100, v = 100;
 		//int kSize = 3;
@@ -136,7 +145,7 @@ int main(int argc, char *argv[])
 					filterController.ConvolutionSquareFilter(dKernel,imgD);
 
 					chron.stop();
-					dataMatrix[i][j] =  (dataMatrix[i][j] + chron.getTime())/n;
+					dataMatrixD[i][j] =  (dataMatrixD[i][j] + chron.getTime())/n;
 				}
 			}
 		}
@@ -171,12 +180,55 @@ int main(int argc, char *argv[])
 					filterController.ConvolutionSquareFilter(gKernel2D,imgG);
 
 					chron.stop();
-					dataMatrix[i][j] =  (dataMatrix[i][j] + chron.getTime())/n;
+					dataMatrixG[i][j] =  (dataMatrixG[i][j] + chron.getTime())/n;
 				}
 			}
 		}
 
 
+		lti::fft fft2d;     // for 2-dimensional FFT
+		lti::matrix<float> imgF(N_MAX,M_MAX);
+		lti::channel reK, imK; // real and imaginary part of kernel
+		lti::channel reI, imI; // real and imaginary part of image
+		/******************************
+		FREQUENCY LOOP
+		*******************************/
+		for (int i = 0; i < 10; i++)
+		{
+			n_actual = N_MAX-i*N_STEP;
+			m_actual = M_MAX-i*M_STEP;
+			imgG = img.copy(imgF, 0, n_actual, 0, m_actual);
+			for (int j = 0; j < 10; j++)
+			{
+				kSize -= K_STEP*j;
+				variance = pow((kSize+2)/6, 2);
+				
+				lti::matrix<float> imgF = filterController.GetPadded(imgF, kSize);
+				// We create the 2D kernel 
+				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
+
+				//Transform to frequency domain
+				fft2d.apply(imgF, reI, imI);
+				fft2d.apply(dKernel, reK, imK);
+
+
+
+
+				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
+
+				// Calculate the new image and filter to get the n data
+				for (int k = 0; k < n; k++)
+				{
+					lti::timer chron;
+					chron.start();
+		
+					//CORRECT MATRIX MULTIPLICATION MISSING !
+
+					chron.stop();
+					dataMatrixF[i][j] =  (dataMatrixF[i][j] + chron.getTime())/n;
+				}
+			}
+		}
 
 
 

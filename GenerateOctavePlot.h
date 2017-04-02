@@ -9,7 +9,7 @@ class GenerateOctavePlot
 {
 	public:
 		GenerateOctavePlot();
-		void GenerateFileOfPlot(const char* plot,double **matrix);
+		void GenerateFileOfPlot(const char* plot,double **matrix, int values[]);
 	private:
 		
 };

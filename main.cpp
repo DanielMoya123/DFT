@@ -35,7 +35,7 @@ using namespace std;
 #define N_MAX 1920
 #define M_MIN 48
 #define M_MAX 1080
-#define K_STEP 120
+#define K_STEP 102
 #define N_STEP 185
 #define M_STEP 103
 #define NC_MIN 10
@@ -83,11 +83,6 @@ int main(int argc, char *argv[])
 			dataMatrixG[i] = new double[10];
 			dataMatrixF[i] = new double[10];
 		}
-
-			
-		
-		//int u = 100, v = 100;
-		//int kSize = 3;
 		
 		lti::matrix<float> img(N_MAX,M_MAX);
 		
@@ -108,27 +103,29 @@ int main(int argc, char *argv[])
 		// ************************************* 
 		FilterImage filterController = FilterImage();
 		
-
 		int kSize = K_MAX;
 		
-		
-		
-		int n = 0;
+		double n = 0;
 		int n_actual = 0;
 		int m_actual = 0;
 
 		lti::matrix<float> imgD(N_MAX,M_MAX);
+
+		lti::timer chron;
+
 		/******************************
 		2D FILTER LOOP
 		*******************************/
 		for (int i = 0; i < 10; i++)
 		{
-			n_actual = N_MAX-i*N_STEP;
-			m_actual = M_MAX-i*M_STEP;
+			n_actual = N_MAX-(i*N_STEP);
+			m_actual = M_MAX-(i*M_STEP);
 			imgD = img.copy(imgD, 0, n_actual, 0, m_actual);
+			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
 			{
-				kSize -= K_STEP*j;
+				kSize -= K_STEP;
+				
 				variance = pow((kSize+2)/6, 2);
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
@@ -138,14 +135,15 @@ int main(int argc, char *argv[])
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
-					lti::timer chron;
+					
 					chron.start();
 		
 					// Funciones para tomar el tiempo
 					filterController.ConvolutionSquareFilter(dKernel,imgD);
 
 					chron.stop();
-					dataMatrixD[i][j] =  (dataMatrixD[i][j] + chron.getTime())/n;
+					dataMatrixD[i][j] += (chron.getTime())/n;	
+
 				}
 			}
 		}
@@ -153,6 +151,8 @@ int main(int argc, char *argv[])
 
 
 		lti::matrix<float> imgG(N_MAX,M_MAX);
+		kSize = K_MAX;
+
 		/******************************
 		OCTOGONAL LOOP
 		*******************************/
@@ -161,9 +161,10 @@ int main(int argc, char *argv[])
 			n_actual = N_MAX-i*N_STEP;
 			m_actual = M_MAX-i*M_STEP;
 			imgG = img.copy(imgG, 0, n_actual, 0, m_actual);
+			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
 			{
-				kSize -= K_STEP*j;
+				kSize -= K_STEP;
 				variance = pow((kSize+2)/6, 2);
 				// We create the octogonal kernel 
 				lti::kernel2D<float> gKernel2D = filterController.GenerateSquareOddGaussianFilter(kSize,variance,true);
@@ -173,14 +174,14 @@ int main(int argc, char *argv[])
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
-					lti::timer chron;
+
 					chron.start();
 		
 					// Funciones para tomar el tiempo
 					filterController.ConvolutionSquareFilter(gKernel2D,imgG);
 
 					chron.stop();
-					dataMatrixG[i][j] =  (dataMatrixG[i][j] + chron.getTime())/n;
+					dataMatrixG[i][j] += (chron.getTime())/n;
 				}
 			}
 		}
@@ -190,6 +191,8 @@ int main(int argc, char *argv[])
 		lti::matrix<float> imgF(N_MAX,M_MAX);
 		lti::channel reK, imK; // real and imaginary part of kernel
 		lti::channel reI, imI; // real and imaginary part of image
+		kSize = K_MAX;
+
 		/******************************
 		FREQUENCY LOOP
 		*******************************/
@@ -198,9 +201,10 @@ int main(int argc, char *argv[])
 			n_actual = N_MAX-i*N_STEP;
 			m_actual = M_MAX-i*M_STEP;
 			imgG = img.copy(imgF, 0, n_actual, 0, m_actual);
+			kSize = K_MAX;	
 			for (int j = 0; j < 10; j++)
 			{
-				kSize -= K_STEP*j;
+				kSize -= K_STEP;
 				variance = pow((kSize+2)/6, 2);
 				
 				lti::matrix<float> imgF = filterController.GetPadded(imgF, kSize);
@@ -211,33 +215,30 @@ int main(int argc, char *argv[])
 				fft2d.apply(imgF, reI, imI);
 				fft2d.apply(dKernel, reK, imK);
 
-
-
-
 				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
 
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
-					lti::timer chron;
+
 					chron.start();
 		
 					//CORRECT MATRIX MULTIPLICATION MISSING !
 
 					chron.stop();
-					dataMatrixF[i][j] =  (dataMatrixF[i][j] + chron.getTime())/n;
+					dataMatrixF[i][j] += (chron.getTime())/n;
 				}
 			}
 		}
-
-
-
-
-
+	
+		
+		int data[] = {K_MIN,N_MIN,M_MIN,K_STEP,N_STEP,M_STEP};
 		
 		GenerateOctavePlot meshPlot = GenerateOctavePlot();
 		
-		meshPlot.GenerateFileOfPlot("./filter.m",dataMatrix);
+		meshPlot.GenerateFileOfPlot("./filterD.m",dataMatrixD,data);
+		meshPlot.GenerateFileOfPlot("./filterG.m",dataMatrixG,data);
+		meshPlot.GenerateFileOfPlot("./filterF.m",dataMatrixF,data);
 
 		return EXIT_SUCCESS;
 	}

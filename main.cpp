@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <ltiIOPNG.h>
 #include <ltiTimer.h>
 #include <ltiImage.h>
 
@@ -66,10 +67,6 @@ int main(int argc, char *argv[])
 		help();
 		
 	}else{
-		
-		// The paths to save the images from the processing
-		string pathImg = "./imageToProcess.png";
-		string pathFilter = "./Guassfilter.png";
 
 		double **dataMatrixD;
 		double **dataMatrixG;
@@ -90,7 +87,7 @@ int main(int argc, char *argv[])
 		{
 			for (int j = 0; j < N_MAX; j++)
 			{
-				img.at(i,j) = (int)(((float)rand()/(float)RAND_MAX)*255);
+				img.at(j,i) = (int)(((float)rand()/(float)RAND_MAX)*255);
 			}
 		}
 		
@@ -110,6 +107,9 @@ int main(int argc, char *argv[])
 		int m_actual = 0;
 
 		lti::matrix<float> imgD(N_MAX,M_MAX);
+		lti::ioPNG saver;
+
+ 		saver.save ("./imgD.png", img);
 
 		lti::timer chron;
 
@@ -129,7 +129,6 @@ int main(int argc, char *argv[])
 				variance = pow((kSize+2)/6, 2);
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
-
 				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
 
 				// Calculate the new image and filter to get the n data
@@ -200,20 +199,16 @@ int main(int argc, char *argv[])
 		{
 			n_actual = N_MAX-i*N_STEP;
 			m_actual = M_MAX-i*M_STEP;
-			imgG = img.copy(imgF, 0, n_actual, 0, m_actual);
+			imgF = img.copy(imgF, 0, n_actual, 0, m_actual);
+			filterController.SetPadding(imgF);
 			kSize = K_MAX;	
 			for (int j = 0; j < 10; j++)
 			{
 				kSize -= K_STEP;
 				variance = pow((kSize+2)/6, 2);
 				
-				lti::matrix<float> imgF = filterController.GetPadded(imgF, kSize);
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
-
-				//Transform to frequency domain
-				fft2d.apply(imgF, reI, imI);
-				fft2d.apply(dKernel, reK, imK);
 
 				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
 
@@ -223,7 +218,7 @@ int main(int argc, char *argv[])
 
 					chron.start();
 		
-					//CORRECT MATRIX MULTIPLICATION MISSING !
+					filterController.FreqSquareFilter(dKernel,imgF);
 
 					chron.stop();
 					dataMatrixF[i][j] += (chron.getTime())/n;

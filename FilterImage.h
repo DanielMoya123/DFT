@@ -9,15 +9,15 @@
 
 #include <ltiGaussKernels.h>
 #include <ltiOctagonalKernel.h>
-#include <ltiBoundaryExpansion.h>
-#include "ltiFFT.h"
-#include "ltiIFFT.h"
-#include <ltiImage.h>
 #include <ltiChannel.h>
 #include <ltiConvolution.h>
 #include <ltiMatrix.h>
 #include <ltiKernel2D.h>
+#include <ltiIFFT.h>
+#include <ltiRound.h>
 #include <ltiBoundaryExpansion.h>
+
+#include <ltiIOPNG.h>
 
 using namespace std;
 
@@ -27,8 +27,8 @@ class FilterImage
 		FilterImage();
 		lti::kernel2D<float> GenerateSquareOddGaussianFilter(int kSize,int variance,bool octagonal);
 		void  ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
-		void  SpaceSquareFilter(lti::kernel2D<float> kernel,lti::image imgToFilter);
-		lti::matrix<float> GetPadded(lti::matrix<float> m, int pSize);
+		void  FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
+		void  SetPadding(lti::matrix<float> imgToFilter);
 	private:
 		
 };

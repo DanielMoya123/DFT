@@ -24,7 +24,7 @@ using namespace std;
 
 /******************************************************
  * 
- * Constructor of the class Campbell-Robson with default values
+ * 
  * 
  * **********************************************
  * 
@@ -116,54 +116,69 @@ void  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matr
  * Restrinctions:
  * 			
  *****/
-void  FilterImage::SpaceSquareFilter(lti::kernel2D<float> kernel,lti::image imgToFilter){
-	
-		// NEED TO APPLY BOUNDARY EXPANSION
+void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
 
-		//lti::fft fft2d;     // for 2-dimensional FFT
-		//lti::ifft ifft2d;   // for 2-dimensional inverse FFT
+      	// shift the spectrum (in the space domain)
+	for (int y=0;y<imgToFilter.rows();++y) {
+        	float s=lti::even(y) ? 1.f : -1.f;
+        	for (int x=0;x<imgToFilter.columns();++x) {
+          		imgToFilter.at(y,x)*=s;
+          		s*=-1.f;
+        	}
+      	}
+	// end of the shift (in the space domain)
 
+	// Transform to frequency spectrum
+	static const lti::eCoordinateSystem cordSys = lti::Polar;
 
-		/* NOT SURE WHY */
-		//par2d.mode = lti::fft::Polar;
-		//ifft2d.setParameters(par2d);
-		//fft2d.setParameters(par2d);
-		/**************************/
+	lti::fft fft2d;     // for 2-dimensional FFT
+	lti::ifft ifft2d;   // for 2-dimensional inverse FFT
 
-		//lti::channel back;
-		//lti::channel re,im;
+	// The real and imaginary parts of the image and filter
+	lti::channel re,im;
+	lti::channel reF,imF;
 
-		//fft2d.apply(R, re, im);       // the actual FFT, Parameters: source, real result part, imaginary result part
+	fft2d.apply(imgToFilter,cordSys,re,im);
+	fft2d.apply(kernel,cordSys,reF,imF);
+
+	// The result of the multiply
+	lti::channel rRe,rIm(imgToFilter.columns(),imgToFilter.rows(),0.0f);
+
+	rRe.emultiply(re,reF);
+	rIm.copy(im);
 		
-		// Multiply 2 channels
-		//lti::channel  result;
+	lti::matrix<float> imgResult;
 
-		//result = lti::matrix< T >::emultiply(a,b)//not sure if so for channel instead of matrix
-		
-		//ifft2d.apply(re, im, back);   // inverse FF, Parameters: real part, imaginary part, destination		
-	
+	ifft2d.apply(rRe,rIm,cordSys,imgResult);
+
+        // shift back the result (in the space domain)
+        for (int y=0;y<imgResult.rows();++y) {
+          float s=lti::even(y) ? 1.f : -1.f;
+          for (int x=0;x<imgResult.columns();++x) {
+            imgResult.at(y,x)*=s;
+            s*=-1.f;
+          }
+        }
+      	
 }
 
+void  FilterImage::SetPadding(lti::matrix<float> imgToFilter){
 
-/******************************************************
- * 
- * 
- * 
- * **********************************************
- * 
- * Inputs: 
- * 			
- * 
- * Outputs:
- * 		
- * 
- * Restrinctions:
- * 			
- *****/
-lti::matrix<float> FilterImage::GetPadded(lti::matrix<float> m, int pSize){
+	// Set the padding
+	const int n = lti::iround(lti::pow(2.0f,ceil(lti::log(2*lti::max(imgToFilter.rows(),
+					imgToFilter.columns()))/lti::log(2.0f))));
 
-	lti::matrix<float> result;
-	lti::boundaryExpansion b = lti::boundaryExpansion(pSize);
-	b.apply(m, result);
-	return result;
+	lti::eBoundaryType padding=lti::Zero;
+	lti::boundaryExpansion::parameters bepar;
+     	bepar.boundaryType = padding;
+
+     	bepar.topBorder = 0;
+     	bepar.leftBorder = 0;
+     	bepar.bottomBorder = n-imgToFilter.rows();
+     	bepar.rightBorder = n-imgToFilter.columns();
+
+	lti::boundaryExpansion be(bepar);
+      	be.apply(imgToFilter);
+
 }
+

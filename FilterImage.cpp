@@ -128,6 +128,9 @@ void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<floa
       	}
 	// end of the shift (in the space domain)
 
+	
+
+
 	// Transform to frequency spectrum
 	static const lti::eCoordinateSystem cordSys = lti::Polar;
 
@@ -138,8 +141,15 @@ void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<floa
 	lti::channel re,im;
 	lti::channel reF,imF;
 
+	cout << " ok 1 " << endl;
+
 	fft2d.apply(imgToFilter,cordSys,re,im);
+
+	cout << " ok 2 " << endl;
+
 	fft2d.apply(kernel,cordSys,reF,imF);
+
+	cout << " ok 3 " << endl;
 
 	// The result of the multiply
 	lti::channel rRe,rIm(imgToFilter.columns(),imgToFilter.rows(),0.0f);

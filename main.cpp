@@ -54,6 +54,22 @@ void help()  {
   
 }
 
+lti::matrix<float> cloneMatrix(lti::matrix<float> img, int nSize, int mSize){
+
+	lti::matrix<float> imgD(nSize,mSize);
+
+	for (int i = 0; i < mSize; i++)
+		{
+			for (int j = 0; j < nSize; j++)
+			{
+				imgD.at(j,i) = img.at(j,i);
+			}
+		}
+	
+	return imgD;
+
+}
+
 /******************************************************
  * 
  * The main function
@@ -94,7 +110,6 @@ int main(int argc, char *argv[])
 		// We get the size in x or y of the filter and set the kSize
 		double variance = 0;
 		
-		
 		// *************************************  
 		// We create the filter
 		// ************************************* 
@@ -106,11 +121,10 @@ int main(int argc, char *argv[])
 		int n_actual = 0;
 		int m_actual = 0;
 
-		lti::matrix<float> imgD(N_MAX,M_MAX);
+		lti::matrix<float> imgD;
 		lti::ioPNG saver;
 
  		saver.save ("./imgD.png", img);
-
 		lti::timer chron;
 
 		/******************************
@@ -120,7 +134,7 @@ int main(int argc, char *argv[])
 		{
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			imgD = img.copy(imgD, 0, n_actual, 0, m_actual);
+			imgD = cloneMatrix(img,n_actual,m_actual);
 			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
 			{
@@ -147,7 +161,11 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		cout << "int size R ori " << imgD.rows() << endl;
+		cout << "int size C ori " << imgD.columns() << endl;
 
+		cout << "int size R ori " << img.rows() << endl;
+		cout << "int size C ori " << img.columns() << endl;
 
 		lti::matrix<float> imgG(N_MAX,M_MAX);
 		kSize = K_MAX;
@@ -157,8 +175,8 @@ int main(int argc, char *argv[])
 		*******************************/
 		for (int i = 0; i < 10; i++)
 		{
-			n_actual = N_MAX-i*N_STEP;
-			m_actual = M_MAX-i*M_STEP;
+			n_actual = N_MAX-(i*N_STEP);
+			m_actual = M_MAX-(i*M_STEP);
 			imgG = img.copy(imgG, 0, n_actual, 0, m_actual);
 			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
@@ -186,10 +204,7 @@ int main(int argc, char *argv[])
 		}
 
 
-		lti::fft fft2d;     // for 2-dimensional FFT
 		lti::matrix<float> imgF(N_MAX,M_MAX);
-		lti::channel reK, imK; // real and imaginary part of kernel
-		lti::channel reI, imI; // real and imaginary part of image
 		kSize = K_MAX;
 
 		/******************************
@@ -197,11 +212,13 @@ int main(int argc, char *argv[])
 		*******************************/
 		for (int i = 0; i < 10; i++)
 		{
-			n_actual = N_MAX-i*N_STEP;
-			m_actual = M_MAX-i*M_STEP;
+			n_actual = N_MAX-(i*N_STEP);
+			m_actual = M_MAX-(i*M_STEP);
 			imgF = img.copy(imgF, 0, n_actual, 0, m_actual);
+
 			filterController.SetPadding(imgF);
-			kSize = K_MAX;	
+
+			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
 			{
 				kSize -= K_STEP;
@@ -225,7 +242,6 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-	
 		
 		int data[] = {K_MIN,N_MIN,M_MIN,K_STEP,N_STEP,M_STEP};
 		

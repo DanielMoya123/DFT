@@ -30,17 +30,17 @@ using namespace std;
  * Definitions
  * 
  * ****************************/
-#define K_MAX 1023
-#define K_MIN 3
-#define N_MIN 64
-#define N_MAX 1920
-#define M_MIN 48
-#define M_MAX 1080
-#define K_STEP 102
-#define N_STEP 185
-#define M_STEP 103
-#define NC_MIN 10
-#define NC_MAX 100
+const int K_MAX = 15;
+const int K_MIN = 3;
+const int N_MIN = 64;
+const int N_MAX = 1920;
+const int M_MIN = 48;
+const int M_MAX = 1080;
+const int K_STEP = 1;
+const int N_STEP = 185;
+const int M_STEP = 103;
+const int NC_MIN = 1;
+const int NC_MAX = 10;
  
 
 /******************************************************
@@ -62,7 +62,7 @@ lti::matrix<float> cloneMatrix(lti::matrix<float> img, int nSize, int mSize){
 		{
 			for (int j = 0; j < nSize; j++)
 			{
-				imgD.at(i,j) = img.at(i,j);
+				imgD.at(j,i) = img.at(j,i);
 			}
 		}
 	
@@ -126,29 +126,40 @@ int main(int argc, char *argv[])
 
  		saver.save ("./imgD.png", img);
 		lti::timer chron;
-
+		cout << "inicio" << endl;
 		/******************************
 		2D FILTER LOOP
 		*******************************/
 		for (int i = 0; i < 10; i++)
 		{
+			//cout << "ciclo i " << i << endl;
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
 			imgD = cloneMatrix(img,n_actual,m_actual);
-			kSize = K_MAX;
+			kSize = K_MAX + K_STEP;
 			for (int j = 0; j < 10; j++)
 			{
+				//cout << "ciclo j " << j << endl;
 				kSize -= K_STEP;
 				
-				variance = pow((kSize+2)/6, 2);
+				variance = lti::sqr((kSize+2)/6);
+
+				//cout << "variance " << variance << endl;
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
-				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
+				n = (1- ( (float)(n_actual*m_actual + kSize*kSize)/(float)(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
+
+				
+				cout << "n es " << n << endl;
 
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
-					
+					//cout << "ciclo k " << k << endl;
+
+					//cout << "Kernel cols, rows " << dKernel.columns() << " " << dKernel.rows() << endl;
+					//cout << "Img cols, rows " << imgD.columns() << " " << imgD.rows() << endl;
+
 					chron.start();
 		
 					// Funciones para tomar el tiempo
@@ -177,7 +188,7 @@ int main(int argc, char *argv[])
 		{
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			imgG = img.copy(imgG, 0, n_actual, 0, m_actual);
+			imgG = cloneMatrix(img,n_actual,m_actual);
 			kSize = K_MAX;
 			for (int j = 0; j < 10; j++)
 			{
@@ -186,8 +197,10 @@ int main(int argc, char *argv[])
 				// We create the octogonal kernel 
 				lti::kernel2D<float> gKernel2D = filterController.GenerateSquareOddGaussianFilter(kSize,variance,true);
 
-				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
+				n = (1- ( (float)(n_actual*m_actual + kSize*kSize)/(float)(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
 
+				
+				cout << "n es " << n << endl;
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
@@ -214,11 +227,12 @@ int main(int argc, char *argv[])
 		{
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			imgF = img.copy(imgF, 0, n_actual, 0, m_actual);
-
-			filterController.SetPadding(imgF);
-
+			imgF = cloneMatrix(img,n_actual,m_actual);
 			kSize = K_MAX;
+			filterController.SetPadding(imgF, kSize-(K_STEP*(i+1)));
+			
+
+			
 			for (int j = 0; j < 10; j++)
 			{
 				kSize -= K_STEP;
@@ -226,9 +240,13 @@ int main(int argc, char *argv[])
 				
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filterController.GenerateSquareOddGaussianFilter(kSize,variance,false);
+				filterController.SetPaddingKernel(dKernel, imgF.rows());
 
-				n = ( 1-( (n_actual*m_actual + kSize*kSize)/(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
 
+				n = (1- ( (float)(n_actual*m_actual + kSize*kSize)/(float)(N_MAX*M_MAX + K_MAX*K_MAX) ) ) * (NC_MAX - NC_MIN) + NC_MIN;
+
+				
+				cout << "n es " << n << endl;
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{

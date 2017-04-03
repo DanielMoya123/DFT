@@ -172,11 +172,11 @@ void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<floa
       	
 }
 
-void  FilterImage::SetPadding(lti::matrix<float> imgToFilter){
+void  FilterImage::SetPadding(lti::matrix<float> imgToFilter, int kSize){
 
 	// Set the padding
 	const int n = lti::iround(lti::pow(2.0f,ceil(lti::log(2*lti::max(imgToFilter.rows(),
-					imgToFilter.columns()))/lti::log(2.0f))));
+					imgToFilter.columns())+kSize-1)/lti::log(2.0f))));
 
 	lti::eBoundaryType padding=lti::Zero;
 	lti::boundaryExpansion::parameters bepar;
@@ -192,3 +192,20 @@ void  FilterImage::SetPadding(lti::matrix<float> imgToFilter){
 
 }
 
+
+void FilterImage::SetPaddingKernel(lti::kernel2D<float> kernelToFilter, int kpSize){
+	// Set the padding
+	
+
+	lti::eBoundaryType padding=lti::Zero;
+	lti::boundaryExpansion::parameters bepar;
+     	bepar.boundaryType = padding;
+
+     	bepar.topBorder = (kpSize - kernelToFilter.rows()-1)/2;
+     	bepar.leftBorder = (kpSize - kernelToFilter.rows()-1)/2;
+     	bepar.bottomBorder = (kpSize + kernelToFilter.rows()-3)/2;
+     	bepar.rightBorder = (kpSize + kernelToFilter.rows()-3)/2;
+
+	lti::boundaryExpansion be(bepar);
+      	be.apply(kernelToFilter);
+}

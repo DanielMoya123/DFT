@@ -28,7 +28,8 @@ class FilterImage
 		lti::kernel2D<float> GenerateSquareOddGaussianFilter(int kSize,int variance,bool octagonal);
 		void  ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
 		void  FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
-		void  SetPadding(lti::matrix<float> imgToFilter);
+		void  SetPadding(lti::matrix<float> imgToFilter, int kSize);
+		void SetPaddingKernel(lti::kernel2D<float> kernelToFilter, int kpSize);
 	private:
 		
 };

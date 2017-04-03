@@ -62,7 +62,7 @@ lti::matrix<float> cloneMatrix(lti::matrix<float> img, int nSize, int mSize){
 		{
 			for (int j = 0; j < nSize; j++)
 			{
-				imgD.at(j,i) = img.at(j,i);
+				imgD.at(i,j) = img.at(i,j);
 			}
 		}
 	

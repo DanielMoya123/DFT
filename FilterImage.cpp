@@ -68,7 +68,7 @@ lti::kernel2D<float> FilterImage::GenerateSquareOddGaussianFilter(int kSize, int
  *      -----------------
  * 			
  *****/
-void  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
+lti::matrix<float>  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
 		
 		// Create the convolution object
 		lti::convolution convolutionO;
@@ -78,6 +78,8 @@ void  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matr
 		// We do the convolution
 		convolutionO.setParameters(param);
 		convolutionO.apply(imgToFilter);
+
+		return imgToFilter;
 		
 }
 
@@ -98,7 +100,7 @@ void  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matr
  *	------------------
  * 			
  *****/
-void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
+lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
 
 	// The size of the image
 	int row = imgToFilter.rows();
@@ -130,13 +132,24 @@ void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<floa
 	fft2d.apply(kernel,cordSys,reF,imF);
 
 	// The result of the multiply
-	lti::channel rRe,rIm(col,row,0.0f);
+	lti::channel rRe, rRe2, rIm(col,row,0.0f), rIm1(col,row,0.0f), rIm2(col,row,0.0f);
 
-	// Multiply the real part
+	// Multiply the real parts
 	rRe.emultiply(re,reF);
+	rRe2.emultiply(im,imF);
+
+	rRe-= rRe2;
+
+
+	//Multiply the imaginary parts
+	rIm1.emultiply(re,imF);
+	rIm2.emultiply(im,reF);
+
+	rIm = rIm1 + rIm2;
+
 	// As the gaussian function is a even function, they don't have 
 	// imaginary part or is zero we ommitted.
-	rIm.copy(im);
+	//rIm.copy(im);
 		
 	lti::matrix<float> imgResult;
 	ifft2d.apply(rRe,rIm,cordSys,imgResult);
@@ -149,6 +162,8 @@ void  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<floa
             s*=-1.f;
           }
         }
+
+    return imgResult;
       	
 }
 
@@ -259,5 +274,26 @@ lti::matrix<float> FilterImage::CloneMatrix(lti::matrix<float> img, int nSize, i
 	}
 	
 	return imgD;
+
+}
+
+double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<float> imgFreq, int nSize, int mSize){
+	double count = 0;
+	double diff = 0;
+
+	for (int i = 0; i < mSize; i++)
+	{
+		for (int j = 0; j < nSize; j++)
+		{
+			diff = imgSpace.at(j,i) - imgFreq.at(j,i);
+			count+=lti::sqr(diff);
+			cout << "diff es " << diff << endl;
+			cout << "count es " << count << endl;
+		}
+	}
+
+	count = count/(nSize*mSize);
+
+	return count;
 
 }

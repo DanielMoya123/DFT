@@ -81,6 +81,11 @@ int main(int argc, char *argv[])
 		
 		// We init the image with random numbers
 		lti::matrix<float> img(N_MAX,M_MAX);
+
+		//Final results
+		lti::matrix<float> imgSpace;
+		lti::matrix<float> imgFreq;
+		double sError;
 		
 		// We fill the matrix with random numbers
 		for (int i = 0; i < M_MAX; i++)
@@ -149,7 +154,7 @@ int main(int argc, char *argv[])
 				{
 					// We take the time to execute this
 					chron.start();
-					filCont.ConvolutionSquareFilter(dKernel,imgD);
+					imgSpace = filCont.ConvolutionSquareFilter(dKernel,imgD);
 					chron.stop();
 					dataMatrix[i][j] += (chron.getTime())/n;	
 
@@ -225,12 +230,19 @@ int main(int argc, char *argv[])
 				for (int k = 0; k < n; k++)
 				{
 					chron.start();
-					filCont.FreqSquareFilter(dKernel,imgF);
+					imgFreq = filCont.FreqSquareFilter(dKernel,imgF);
 					chron.stop();
 					dataMatrix[i][j] += (chron.getTime())/n;
 				}
 			}
 		}
+
+		//Get the square difference error
+
+		sError = filCont.GetSquareError(imgSpace, imgFreq, N_MAX-SIZESQ*N_STEP, M_MAX-SIZESQ*M_STEP);
+
+		cout << "Mean squared error: " << sError << endl;
+
 		// Plot the third data
 		plotCont.GenerateFileOfPlot("./filterF.m",dataMatrix,data);
 

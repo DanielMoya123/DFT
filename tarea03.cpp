@@ -31,7 +31,7 @@ using namespace std;
  * 
  * ****************************/
 const int K_MAX = 15;
-const int K_MIN = 3;
+const int K_MIN = 5;
 const int N_MIN = 64;
 const int N_MAX = 1920;
 const int M_MIN = 48;

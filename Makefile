@@ -8,11 +8,11 @@
 #----------------------------------------------------------------
 
 #Base Directory
-LTIBASE:=$(HOME)/LTILib-2/ltilib-2
+LTIBASE:=/home/daniel/ltilib-2
 LTICMD:=$(LTIBASE)/linux/lti-local-config
 
 #Example name
-PACKAGE:=$(shell basename $$PWD)
+PACKAGE:=tarea03
 
 # If you want to generate a debug version, uncomment the next line
 BUILDRELEASE=yes
@@ -34,8 +34,8 @@ ifeq "$(CXX_MAJOR)" "2"
 else
   ifeq "$(CXX_MAJOR)" "3"
   VPATHADDON=
-  CPUARCH = -march=pentium3
-  CPUARCHD = -march=pentium3
+  CPUARCH = -march=pentium4
+  CPUARCHD = -march=pentium4
   else
   VPATHADDON=
   CPUARCH = -march=native

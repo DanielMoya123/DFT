@@ -19,6 +19,10 @@
 
 #include <ltiIOPNG.h>
 
+
+#include "ltiRealFFT.h"
+#include "ltiRealInvFFT.h"
+
 using namespace std;
 
 class FilterImage

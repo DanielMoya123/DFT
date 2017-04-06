@@ -239,6 +239,12 @@ int main(int argc, char *argv[])
 
 		//Get the square difference error
 
+		cout << "rows of space " << imgSpace.rows() << endl;
+		cout << "cols of space " << imgSpace.columns() << endl;
+
+		cout << "rows of freq " << imgFreq.rows() << endl;
+		cout << "cols of freq " << imgFreq.columns() << endl;
+
 		sError = filCont.GetSquareError(imgSpace, imgFreq, N_MAX-SIZESQ*N_STEP, M_MAX-SIZESQ*M_STEP);
 
 		cout << "Mean squared error: " << sError << endl;

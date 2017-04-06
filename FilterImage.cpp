@@ -120,8 +120,11 @@ lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lt
 	// Transform to frequency spectrum
 	static const lti::eCoordinateSystem cordSys = lti::Polar;
 
-	lti::fft fft2d;   // for 2-dimensional FFT
-	lti::ifft ifft2d; // for 2-dimensional inverse FFT
+	//lti::fft fft2d;   // for 2-dimensional FFT
+	//lti::ifft ifft2d; // for 2-dimensional inverse FFT
+
+	lti::realFFT fft2d;       // for 2-dimensional FFT
+  	lti::realInvFFT ifft2d;   // for 2-dimensional inverse FFT
 
 	// The real and imaginary parts of the image and filter
 	lti::channel re,im;
@@ -287,8 +290,8 @@ double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<floa
 		{
 			diff = imgSpace.at(j,i) - imgFreq.at(j,i);
 			count+=lti::sqr(diff);
-			cout << "diff es " << diff << endl;
-			cout << "count es " << count << endl;
+			cout << "val freq en " << i << " " << j << " es " << imgFreq.at(j,i) << endl;
+			//cout << "count es " << count << endl;
 		}
 	}
 

@@ -41,12 +41,15 @@ lti::kernel2D<float> FilterImage::GenerateSquareOddGaussianFilter(int kSize, int
 	
 	// We ask if the filter is octogonal or not
 	if (octagonal){
+		lti::octagonalKernel<float> gauss(kSize,variance); 
+		kern.castFrom(gauss);		
+	}else{
 		lti::gaussKernel2D<float> gauss(kSize,variance); 
 		kern.castFrom(gauss);
-	}else{
-		lti::octagonalKernel<float> gauss(kSize,variance); 
-		kern.castFrom(gauss);
 	}
+
+	//Normalize kernel
+	kern.divide(kSize*kSize);
 	
 	return kern;
 }
@@ -71,12 +74,12 @@ lti::kernel2D<float> FilterImage::GenerateSquareOddGaussianFilter(int kSize, int
 lti::matrix<float>  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
 		
 		// Create the convolution object
-		lti::convolution convolutionO;
-		lti::convolution::parameters param;
+		lti::convolution convolutionO (kernel);
+		//lti::convolution::parameters param;
 		// Set the kernel to convolute
-		param.setKernel(kernel);
+		//param.setKernel(kernel);
 		// We do the convolution
-		convolutionO.setParameters(param);
+		//convolutionO.setParameters(param);
 		convolutionO.apply(imgToFilter);
 
 		return imgToFilter;
@@ -291,11 +294,15 @@ double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<floa
 	int row = imgSpace.rows();
 	int col = imgSpace.columns();
 
-	for (int i = 0; i < row; i++)
+
+	for (int i = 1; i < row; i++)
 	{
-		for (int j = 0; j < col; j++)
+		for (int j = 1; j < col; j++)
 		{
+
 			diff = imgSpace.at(j,i) - imgFreq.at(j,i);
+			cout << imgSpace.at(j,i) << " " << imgFreq.at(j,i) << " " <<  diff << endl;
+
 			count+=lti::sqr(diff);
 		}
 	}

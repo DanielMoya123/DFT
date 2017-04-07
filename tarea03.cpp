@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 		{
 			for (int j = 0; j < N_MAX; j++)
 			{
-				img.at(j,i) = (int)(((float)rand()/(float)RAND_MAX)*255);
+				img.at(j,i) = (((float)rand()/(float)RAND_MAX));
 			}
 		}
 		
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 		/******************************
 		OCTOGONAL LOOP
 		*******************************/
-		/******************************
+		
 		for (int i = 0; i < SIZESQ; i++)
 		{
 
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 		}
 		// Plot the second data
 		plotCont.GenerateFileOfPlot("./filterG.m",dataMatrix,data);
-		*******************************/
+		
 
 		cout << "Start Frenquency Loop" << endl;
 		/******************************
@@ -245,11 +245,7 @@ int main(int argc, char *argv[])
 		//Get the square difference error
 		double sError;
 
-		cout << "rows of space " << imgSpa.rows() << endl;
-		cout << "cols of space " << imgSpa.columns() << endl;
-
-		cout << "rows of freq " << imgFre.rows() << endl;
-		cout << "cols of freq " << imgFre.columns() << endl;
+		
 
 		saver.save ("./imgSpa.png", imgSpa);
 		saver.save ("./imgFre.png", imgFre);

@@ -19,10 +19,6 @@
 
 #include <ltiIOPNG.h>
 
-
-#include "ltiRealFFT.h"
-#include "ltiRealInvFFT.h"
-
 using namespace std;
 
 class FilterImage
@@ -30,12 +26,13 @@ class FilterImage
 	public:
 		FilterImage();
 		lti::kernel2D<float> GenerateSquareOddGaussianFilter(int kSize,int variance,bool octagonal);
-		lti::matrix<float> CloneMatrix(lti::matrix<float> img, int nSize, int mSize);
+		lti::matrix<float> CloneMatrix(lti::matrix<float> img, int nSize, int mSize,int beginN, int beginM);
 		lti::matrix<float>  ConvolutionSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
-		lti::matrix<float>  FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter);
-		void  SetPadding(lti::matrix<float> imgToFilter, int kSize);
-		void  SetPaddingKernel(lti::kernel2D<float> kernelToFilter, int kpSize);
-		double GetSquareError(lti::matrix<float> imgSpace, lti::matrix<float> imgFreq, int nSize, int mSize);
+		lti::matrix<float>  FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter,int oRow,int oCol);
+		void  SetPadding(lti::matrix<float> *imgToFilter, int kSize);
+		void  SetPaddingKernel(lti::kernel2D<float> *kernelToFilter, int kpSize);
+		double GetSquareError(lti::matrix<float> imgSpace, lti::matrix<float> imgFreq);
 	private:
+		
 		
 };

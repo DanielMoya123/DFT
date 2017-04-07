@@ -37,7 +37,7 @@ GenerateOctavePlot::GenerateOctavePlot(void) {}
  * Restrinctions:
  * 		-------
  *****/
-void GenerateOctavePlot::GenerateFileOfPlot(const char* path,double **matrix,int values[]){
+void GenerateOctavePlot::GenerateFileOfPlot(const char* path,double matrix[][10],int values[]){
 	
 	// We open the file
 	ofstream myfile;
@@ -51,17 +51,19 @@ void GenerateOctavePlot::GenerateFileOfPlot(const char* path,double **matrix,int
 	
 	// We write the x values
 	myfile << "xx = [";
-	for (int i = 0; i < SIZESQ; i++)
+	for (int i = SIZESQ; i > 0; i--)
 	{
-		for (int j = SIZESQ; j > 0; myfile << (iPix+(iStep*(j--)) + kPix+(kStep*i)) << ",");
+		for (int j = 0; j < SIZESQ; j++){
+			myfile << kPix+(kStep*i) << ",";
+		}
 		myfile << ";";
 	}
 	
 	// We write the y values
 	myfile << "]" << endl << "yy = [";
-	for (int i = SIZESQ; i  > 0; i--)
+	for (int i = 0; i  < SIZESQ; i++)
 	{
-		for (int j = SIZESQ; j > 0; myfile << (kPix+(kStep*(j--)) + iPix+(iStep*i)) << ",");
+		for (int j = SIZESQ; j > 0; myfile << iPix+(iStep*(j--)) << ",");
 		myfile << ";";
 	}
 	

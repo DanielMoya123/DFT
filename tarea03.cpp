@@ -71,21 +71,22 @@ int main(int argc, char *argv[])
 		
 
 		// We initialize the matrix to save the data
-		double **dataMatrix;
-		dataMatrix = new double*[SIZESQ];
-		for(int i = 0; i <SIZESQ; i++)
+		double dataMatrix[10][10];
+
+		for (int i = 0; i < SIZESQ; i++)
 		{
-			dataMatrix[i] = new double[SIZESQ];
+			for (int j = 0; j < SIZESQ; j++)
+			{
+				dataMatrix[i][j] = 0;
+			}
 		}
-		// 
 		
 		// We init the image with random numbers
 		lti::matrix<float> img(N_MAX,M_MAX);
 
-		//Final results
-		lti::matrix<float> imgSpace;
-		lti::matrix<float> imgFreq;
-		double sError;
+		// Image to get the error
+		lti::matrix<float> imgSpa;
+		lti::matrix<float> imgFre;
 		
 		// We fill the matrix with random numbers
 		for (int i = 0; i < M_MAX; i++)
@@ -119,12 +120,11 @@ int main(int argc, char *argv[])
 		
 		// Save the main image
 		lti::ioPNG saver;
- 		saver.save ("./imgD.png", img);
+ 		saver.save ("./imgOri.png", img);
 		lti::timer chron;
 
 		cout << "Start" << endl;
-		cout << "Start 2D filter Loop" << endl;
-
+		cout << "Start 2D Filter Loop" << endl;
 		/******************************
 		2D FILTER LOOP
 		*******************************/
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 			// Init the values of the image and values
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			lti::matrix<float> imgD = filCont.CloneMatrix(img,n_actual,m_actual);
+			lti::matrix<float> imgD = filCont.CloneMatrix(img,n_actual,m_actual,0,0);
 			kSize = K_MAX + K_STEP;
 			
 			for (int j = 0; j < SIZESQ; j++)
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 				{
 					// We take the time to execute this
 					chron.start();
-					imgSpace = filCont.ConvolutionSquareFilter(dKernel,imgD);
+					imgSpa = filCont.ConvolutionSquareFilter(dKernel,imgD);
 					chron.stop();
 					dataMatrix[i][j] += (chron.getTime())/n;	
 
@@ -163,18 +163,20 @@ int main(int argc, char *argv[])
 		}
 		// Plot the first data
 		plotCont.GenerateFileOfPlot("./filterD.m",dataMatrix,data);
-		cout << "Start Octagonal Loop" << endl;
 
+		
+		cout << "Start Octagonal Loop" << endl;
 		/******************************
 		OCTOGONAL LOOP
 		*******************************/
+		/******************************
 		for (int i = 0; i < SIZESQ; i++)
 		{
 
 			// Init the values of the image and values
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			lti::matrix<float> imgG = filCont.CloneMatrix(img,n_actual,m_actual);
+			lti::matrix<float> imgG = filCont.CloneMatrix(img,n_actual,m_actual,0,0);
 			kSize = K_MAX + K_STEP;
 
 			for (int j = 0; j < SIZESQ; j++)
@@ -200,6 +202,7 @@ int main(int argc, char *argv[])
 		}
 		// Plot the second data
 		plotCont.GenerateFileOfPlot("./filterG.m",dataMatrix,data);
+		*******************************/
 
 		cout << "Start Frenquency Loop" << endl;
 		/******************************
@@ -210,9 +213,9 @@ int main(int argc, char *argv[])
 			// Init the values of the image and values
 			n_actual = N_MAX-(i*N_STEP);
 			m_actual = M_MAX-(i*M_STEP);
-			lti::matrix<float> imgF = filCont.CloneMatrix(img,n_actual,m_actual);
 			kSize = K_MAX + K_STEP;
-			filCont.SetPadding(imgF, kSize-(K_STEP*(i+1)));
+			lti::matrix<float> imgF = filCont.CloneMatrix(img,n_actual,m_actual,0,0);
+			filCont.SetPadding(&imgF, kSize-(K_STEP*(i+1)));
 			
 			for (int j = 0; j < SIZESQ; j++)
 			{
@@ -224,33 +227,36 @@ int main(int argc, char *argv[])
 				
 				// We create the 2D kernel 
 				lti::kernel2D<float> dKernel = filCont.GenerateSquareOddGaussianFilter(kSize,variance,false);
-				filCont.SetPaddingKernel(dKernel, imgF.rows());
+				filCont.SetPaddingKernel(&dKernel, imgF.rows());
 				
 				// Calculate the new image and filter to get the n data
 				for (int k = 0; k < n; k++)
 				{
 					chron.start();
-					imgFreq = filCont.FreqSquareFilter(dKernel,imgF);
+					imgFre = filCont.FreqSquareFilter(dKernel,imgF,n_actual,m_actual);
 					chron.stop();
 					dataMatrix[i][j] += (chron.getTime())/n;
 				}
 			}
 		}
-
-		//Get the square difference error
-
-		cout << "rows of space " << imgSpace.rows() << endl;
-		cout << "cols of space " << imgSpace.columns() << endl;
-
-		cout << "rows of freq " << imgFreq.rows() << endl;
-		cout << "cols of freq " << imgFreq.columns() << endl;
-
-		sError = filCont.GetSquareError(imgSpace, imgFreq, N_MAX-SIZESQ*N_STEP, M_MAX-SIZESQ*M_STEP);
-
-		cout << "Mean squared error: " << sError << endl;
-
 		// Plot the third data
 		plotCont.GenerateFileOfPlot("./filterF.m",dataMatrix,data);
+
+		//Get the square difference error
+		double sError;
+
+		cout << "rows of space " << imgSpa.rows() << endl;
+		cout << "cols of space " << imgSpa.columns() << endl;
+
+		cout << "rows of freq " << imgFre.rows() << endl;
+		cout << "cols of freq " << imgFre.columns() << endl;
+
+		saver.save ("./imgSpa.png", imgSpa);
+		saver.save ("./imgFre.png", imgFre);
+
+		sError = filCont.GetSquareError(imgSpa, imgFre);
+
+		cout << "Mean squared error: " << sError << endl;
 
 		return EXIT_SUCCESS;
 	}

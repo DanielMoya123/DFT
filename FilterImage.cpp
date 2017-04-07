@@ -91,7 +91,8 @@ lti::matrix<float>  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> ke
  * 
  * Inputs: 
  * 	lti::kernel2D<float> kernel: The kernel
- *	lti::matrix<float> imgToFilter: The image to filter 		
+ *	lti::matrix<float> imgToFilter: The image to filter 
+ *	int oRow: The original size of the rows		
  * 
  * Outputs:
  * 	------------------	
@@ -100,7 +101,7 @@ lti::matrix<float>  FilterImage::ConvolutionSquareFilter(lti::kernel2D<float> ke
  *	------------------
  * 			
  *****/
-lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter){
+lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lti::matrix<float> imgToFilter,int oRow,int oCol){
 
 	// The size of the image
 	int row = imgToFilter.rows();
@@ -120,11 +121,8 @@ lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lt
 	// Transform to frequency spectrum
 	static const lti::eCoordinateSystem cordSys = lti::Polar;
 
-	//lti::fft fft2d;   // for 2-dimensional FFT
-	//lti::ifft ifft2d; // for 2-dimensional inverse FFT
-
-	lti::realFFT fft2d;       // for 2-dimensional FFT
-  	lti::realInvFFT ifft2d;   // for 2-dimensional inverse FFT
+	lti::fft fft2d;   // for 2-dimensional FFT
+	lti::ifft ifft2d; // for 2-dimensional inverse FFT
 
 	// The real and imaginary parts of the image and filter
 	lti::channel re,im;
@@ -143,15 +141,14 @@ lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lt
 
 	rRe-= rRe2;
 
-
 	//Multiply the imaginary parts
 	rIm1.emultiply(re,imF);
 	rIm2.emultiply(im,reF);
 
 	rIm = rIm1 + rIm2;
 
-	// As the gaussian function is a even function, they don't have 
-	// imaginary part or is zero we ommitted.
+	// As the gaussian function is an even function, don't has 
+	// imaginary part or is zero and we ommitted.
 	//rIm.copy(im);
 		
 	lti::matrix<float> imgResult;
@@ -166,8 +163,9 @@ lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lt
           }
         }
 
-    return imgResult;
-      	
+	imgResult = CloneMatrix(imgResult, oRow, oCol,1,1);  
+
+	return imgResult;    	
 }
 
 /******************************************************
@@ -187,11 +185,11 @@ lti::matrix<float>  FilterImage::FreqSquareFilter(lti::kernel2D<float> kernel,lt
  *	------------------
  * 			
  *****/
-void  FilterImage::SetPadding(lti::matrix<float> imgToFilter, int kSize){
+void  FilterImage::SetPadding(lti::matrix<float> *imgToFilter, int kSize){
 
 	// Set the padding
-	const int n = lti::iround(lti::pow(2.0f,ceil(lti::log(2*lti::max(imgToFilter.rows(),
-					imgToFilter.columns())+kSize-1)/lti::log(2.0f))));
+	const int n = lti::iround(lti::pow(2.0f,ceil(lti::log(lti::max(imgToFilter->rows(),
+					imgToFilter->columns())+kSize-1)/lti::log(2.0f))));
 
 	// The type  of padding is zero
 	lti::eBoundaryType padding=lti::Zero;
@@ -201,12 +199,12 @@ void  FilterImage::SetPadding(lti::matrix<float> imgToFilter, int kSize){
 	// We set where the image is with respect the padding
      	bepar.topBorder = 0;
      	bepar.leftBorder = 0;
-     	bepar.bottomBorder = n-imgToFilter.rows();
-     	bepar.rightBorder = n-imgToFilter.columns();
+     	bepar.bottomBorder = n-imgToFilter->rows();
+     	bepar.rightBorder = n-imgToFilter->columns();
 
 	// Apply the boundary expansion
 	lti::boundaryExpansion be(bepar);
-      	be.apply(imgToFilter);
+      	be.apply(*imgToFilter);
 
 }
 
@@ -227,21 +225,23 @@ void  FilterImage::SetPadding(lti::matrix<float> imgToFilter, int kSize){
  *	------------------
  * 			
  *****/
-void FilterImage::SetPaddingKernel(lti::kernel2D<float> kernelToFilter, int kpSize){
+void FilterImage::SetPaddingKernel(lti::kernel2D<float> *kernelToFilter, int kpSize){
 
 	// Set the padding
 	lti::eBoundaryType padding=lti::Zero;
 	lti::boundaryExpansion::parameters bepar;
      	bepar.boundaryType = padding;
 
+	int rows = kernelToFilter->rows();
+
 	// We set where the filter is with respect the padding
-     	bepar.topBorder = (kpSize - kernelToFilter.rows()-1)/2;
-     	bepar.leftBorder = (kpSize - kernelToFilter.rows()-1)/2;
-     	bepar.bottomBorder = (kpSize + kernelToFilter.rows()-3)/2;
-     	bepar.rightBorder = (kpSize + kernelToFilter.rows()-3)/2;
+     	bepar.topBorder =    (kpSize - rows)/2 + 1;
+     	bepar.leftBorder =   (kpSize - rows)/2 + 1;
+     	bepar.bottomBorder = (kpSize - rows)/2;
+     	bepar.rightBorder =  (kpSize - rows)/2;
 
 	lti::boundaryExpansion be(bepar);
-      	be.apply(kernelToFilter);
+      	be.apply(*kernelToFilter);
 }
 
 /******************************************************
@@ -262,15 +262,15 @@ void FilterImage::SetPaddingKernel(lti::kernel2D<float> kernelToFilter, int kpSi
  *	------------------
  * 			
  *****/
-lti::matrix<float> FilterImage::CloneMatrix(lti::matrix<float> img, int nSize, int mSize){
+lti::matrix<float> FilterImage::CloneMatrix(lti::matrix<float> img, int nSize, int mSize, int beginN, int beginM){
 
 	// We create a matrix with this
 	lti::matrix<float> imgD(nSize,mSize);
 
 	// We copy all the values
-	for (int i = 0; i < mSize; i++)
+	for (int i = beginM; i < mSize; i++)
 	{
-		for (int j = 0; j < nSize; j++)
+		for (int j = beginN; j < nSize; j++)
 		{
 			imgD.at(j,i) = img.at(j,i);
 		}
@@ -280,23 +280,27 @@ lti::matrix<float> FilterImage::CloneMatrix(lti::matrix<float> img, int nSize, i
 
 }
 
-double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<float> imgFreq, int nSize, int mSize){
-	double count = 0;
-	double diff = 0;
+/******************************************************
+ * Get the error of the difference
+ * **********************************************/
+double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<float> imgFreq){
+	
+	double count = 0,diff = 0;
 
-	for (int i = 0; i < mSize; i++)
+	// The size of the image
+	int row = imgSpace.rows();
+	int col = imgSpace.columns();
+
+	for (int i = 0; i < row; i++)
 	{
-		for (int j = 0; j < nSize; j++)
+		for (int j = 0; j < col; j++)
 		{
 			diff = imgSpace.at(j,i) - imgFreq.at(j,i);
 			count+=lti::sqr(diff);
-			cout << "val freq en " << i << " " << j << " es " << imgFreq.at(j,i) << endl;
-			//cout << "count es " << count << endl;
 		}
 	}
 
-	count = count/(nSize*mSize);
-
+	count = count/(row*col);
 	return count;
 
 }

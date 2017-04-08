@@ -301,7 +301,7 @@ double FilterImage::GetSquareError(lti::matrix<float> imgSpace, lti::matrix<floa
 		{
 
 			diff = imgSpace.at(j,i) - imgFreq.at(j,i);
-			cout << imgSpace.at(j,i) << " " << imgFreq.at(j,i) << " " <<  diff << endl;
+			//cout << imgSpace.at(j,i) << " " << imgFreq.at(j,i) << " " <<  diff << endl;
 
 			count+=lti::sqr(diff);
 		}

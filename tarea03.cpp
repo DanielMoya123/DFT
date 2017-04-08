@@ -30,13 +30,13 @@ using namespace std;
  * Constants
  * 
  * ****************************/
-const int K_MAX = 130;
-const int K_MIN = 13;
+const int K_MAX = 15;
+const int K_MIN = 5;
 const int N_MIN = 64;
 const int N_MAX = 1920;
 const int M_MIN = 48;
 const int M_MAX = 1080;
-const int K_STEP = 13;
+const int K_STEP = 1;
 const int N_STEP = 185;
 const int M_STEP = 103;
 const int NC_MIN = 1;
